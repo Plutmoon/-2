@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>건축도장기능사 연습 - 자유조색</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f4ef;--ink:#1d1d1b;--sub:#4a4943;--card:#fff;--line:#ddd8cb;--btn:#f6f4ef;--side:#1d1d1b;--sidetxt:#f6f4ef;--accent:#1e5b4f}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#161614;--ink:#f1efe8;--sub:#bdb9ad;--card:#22221f;--line:#3a3934;--btn:#2c2b27;--side:#0e0e0d;--sidetxt:#f1efe8;--accent:#4fae98}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font-family:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{min-height:100vh;display:flex;flex-wrap:wrap}
+nav{flex:0 0 200px;padding:32px 16px;background:var(--side);display:flex;flex-direction:column;gap:8px}
+.brand{color:var(--sidetxt);font-size:24px;font-weight:800;padding:0 12px;line-height:1.25}
+.back{align-self:flex-start;height:36px;margin:4px 0 20px 12px;padding:0 14px;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--sidetxt);background:transparent;border:1px solid #f6f4ef88;border-radius:8px}
+.tab{height:48px;border:0;border-radius:10px;text-align:left;padding:0 16px;font-size:16px;font-weight:700;background:transparent;color:var(--sidetxt)}
+.tab.on{background:var(--bg);color:var(--ink)}
+main{flex:999 1 560px;min-width:0;padding:40px 48px;display:flex;flex-direction:column;gap:32px}
+h1{margin:0;font-size:48px;font-weight:800;letter-spacing:-.02em}
+h2{margin:0;font-size:18px}
+.desc{margin:8px 0 0;font-size:17px;color:var(--sub)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+section{flex:1 1 260px;min-width:0}
+.mats{display:flex;flex-direction:column;gap:10px}
+.mat{display:flex;align-items:center;gap:14px;width:100%;padding:12px 16px;text-align:left;background:var(--card);border-radius:14px;border:1px solid var(--line)}
+.mat.on{border:3px solid var(--accent);padding:10px 14px}
+.dot{width:36px;height:36px;border-radius:50%;flex:none;border:1px solid #00000033}
+.mat b{font-size:17px;display:block}.mat small{font-size:13px;color:var(--sub)}.cnt{margin-left:auto;font-size:15px;font-weight:700}
+.panel{display:flex;flex-direction:column;gap:16px;padding:24px;background:var(--card);border-radius:16px;border:1px solid var(--line)}
+.step{display:flex;align-items:center;gap:8px}
+.sq{width:48px;height:48px;font-size:24px;border:1px solid var(--line);border-radius:12px;background:var(--btn)}
+input[type=number]{width:88px;height:48px;text-align:center;font-size:22px;font-weight:700;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+.add{height:48px;font-size:16px;font-weight:700;border:2px solid var(--accent);border-radius:12px;background:var(--card);color:var(--accent)}
+.mixb{flex:1;height:52px;font-size:18px;font-weight:800;border:0;border-radius:12px;background:var(--accent);color:#fff}
+.reset{height:52px;padding:0 18px;font-size:15px;border:1px solid var(--line);border-radius:12px;background:var(--btn)}
+.recipe{font-size:14px;color:var(--sub);min-height:20px}
+.result{display:flex;flex-direction:column;align-items:center;gap:12px}
+.result h2{align-self:flex-start}
+.rtext{font-size:15px;color:var(--sub);text-align:center}
+.log{padding:48px;border:2px dashed var(--line);border-radius:16px;color:var(--sub);font-size:16px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+<nav>
+<div class="brand">도장기능사 연습</div>
+<button class="back">← BACK</button>
+<button class="tab on" id="tabMix">조색</button>
+<button class="tab" id="tabLog">기록</button>
+</nav>
+<main>
+<header>
+<h1>자유조색</h1>
+<p class="desc">잉크를 자유롭게 조합하여 여러가지 색상을 만들어보세요.</p>
+</header>
+<div class="log" id="logView" hidden>아직 기록이 없습니다. 조색 기록은 다음 단계에서 만들어요.</div>
+<div class="row" id="mixView">
+<section>
+<h2 style="margin-bottom:14px">재료 선택</h2>
+<div class="mats" id="mats"></div>
+</section>
+<section class="panel">
+<h2>투입량 <span style="font-weight:500;font-size:14px;color:var(--sub)">(1 = 한 방울)</span></h2>
+<div style="font-size:15px">선택: <strong id="selName"></strong></div>
+<div class="step">
+<button class="sq" id="dec" aria-label="줄이기">−</button>
+<input type="number" id="amt" min="0" max="99" value="1" aria-label="방울 수">
+<button class="sq" id="inc" aria-label="늘리기">+</button>
+</div>
+<button class="add" id="add">넣기</button>
+<div class="recipe" id="recipe"></div>
+<div style="display:flex;gap:8px">
+<button class="mixb" id="mix">mix</button>
+<button class="reset" id="reset">초기화</button>
+</div>
+</section>
+<section class="result">
+<h2>조색 결과</h2>
+<svg viewBox="0 0 240 280" width="240" height="280" role="img" aria-label="종이컵 안의 조색 결과">
+<ellipse cx="120" cy="262" rx="78" ry="10" fill="#000" opacity=".1"/>
+<path d="M30 50 L210 50 L188 244 Q120 262 52 244 Z" fill="#fff" stroke="#bdb8ab" stroke-width="3"/>
+<path id="liq" d="M38 108 L202 108 L184 238 Q120 254 56 238 Z" fill="none"/>
+<ellipse id="liqTop" cx="120" cy="108" rx="82" ry="12" fill="none" stroke="#00000022" stroke-width="2"/>
+<ellipse cx="120" cy="50" rx="90" ry="14" fill="#f1eee6" stroke="#bdb8ab" stroke-width="3"/>
+<ellipse cx="120" cy="52" rx="80" ry="10" fill="#e4e0d4"/>
+</svg>
+<div class="rtext" id="rtext">재료를 넣고 mix를 눌러보세요.</div>
+</section>
+</div>
+</main>
+</div>
+<script>
+var defs=[
+{id:'white',name:'흰색',kind:'페인트',color:'#f4f2ec',rgb:[244,242,236],k:1},
+{id:'red',name:'빨간색',kind:'잉크',color:'#c8281e',rgb:[200,40,30],k:1.6},
+{id:'yellow',name:'노란색',kind:'잉크',color:'#f2c200',rgb:[242,194,0],k:1.4},
+{id:'blue',name:'파란색',kind:'잉크',color:'#1f4fa8',rgb:[31,79,168],k:1.8},
+{id:'black',name:'검정색',kind:'잉크',color:'#151515',rgb:[21,21,21],k:2.5}];
+var sel='white',recipe={white:0,red:0,yellow:0,blue:0,black:0},mixed=null,mixedText='';
+var $=function(i){return document.getElementById(i)};
+function clamp(n){return Math.max(0,Math.min(99,n|0))}
+function parts(){return defs.filter(function(d){return recipe[d.id]>0}).map(function(d){return d.name+' '+recipe[d.id]}).join(' · ')}
+function draw(){
+ var box=$('mats');box.innerHTML='';
+ defs.forEach(function(d){
+  var b=document.createElement('button');b.className='mat'+(sel===d.id?' on':'');
+  b.innerHTML='<span class="dot" style="background:'+d.color+'"></span><span><b>'+d.name+'</b><small>'+d.kind+'</small></span><span class="cnt">'+(recipe[d.id]>0?recipe[d.id]+'방울':'')+'</span>';
+  b.onclick=function(){sel=d.id;draw()};box.appendChild(b);
+ });
+ $('selName').textContent=defs.filter(function(d){return d.id===sel})[0].name;
+ var p=parts();$('recipe').textContent=p?'투입: '+p:'아직 넣은 재료가 없어요.';
+ var c=mixed||'none';$('liq').setAttribute('fill',c);$('liqTop').setAttribute('fill',c);
+ $('rtext').textContent=mixed?'조색 완료 · '+mixedText:'재료를 넣고 mix를 눌러보세요.';
+}
+$('dec').onclick=function(){$('amt').value=clamp(+$('amt').value-1)};
+$('inc').onclick=function(){$('amt').value=clamp(+$('amt').value+1)};
+$('amt').onchange=function(){$('amt').value=clamp(parseInt($('amt').value,10)||0)};
+$('add').onclick=function(){var n=clamp(+$('amt').value);if(n>0){recipe[sel]+=n;draw()}};
+$('reset').onclick=function(){for(var k in recipe)recipe[k]=0;mixed=null;draw()};
+$('mix').onclick=function(){
+ var w=0,r=0,g=0,b=0;
+ defs.forEach(function(d){var q=recipe[d.id]*d.k;w+=q;r+=q*d.rgb[0];g+=q*d.rgb[1];b+=q*d.rgb[2]});
+ if(w>0){mixed='rgb('+Math.round(r/w)+','+Math.round(g/w)+','+Math.round(b/w)+')';mixedText=parts();draw()}
+};
+function tab(m){$('mixView').hidden=!m;$('logView').hidden=m;$('tabMix').classList.toggle('on',m);$('tabLog').classList.toggle('on',!m)}
+$('tabMix').onclick=function(){tab(true)};$('tabLog').onclick=function(){tab(false)};
+draw();
+</script>
+</body>
+</html>
